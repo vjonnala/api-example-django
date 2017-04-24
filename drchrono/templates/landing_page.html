@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+You aren't logged in yet.
+
+
+    <a href="{% url 'social:begin' 'drchrono' %}">
+      drchrono OAuth
+    </a>
+<br/>
+    ---
+        {{ backends }}
+
+<br/>
+    ---
+  {{ request }}
+
+<br/>
+    ---
+  {{ request.user }}
+
+
+
+</body>
+</html>
