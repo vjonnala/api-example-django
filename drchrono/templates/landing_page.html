@@ -1,16 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-You aren't logged in yet.
+{% extends "base.html" %}
+{% block head_title %}Welcome {{ block.super }}{% endblock %}
+{% block body %}
+<div class="container">
+    <div class="jumbotron">
+        <h1>Welcome</h1>
+        <p class="lead">
+            DrChrono Kiosk allows patients to self check-in and indicates to healthcare providers how long
+            patients have been waiting.
+        </p>
+        <p>
+            <a class="btn btn-lg btn-success" href="#" role="button">Sign in with DrChrono <i
+                    class="glyphicon glyphicon-arrow-right"></i></a>
+            <a class="btn btn-default">Learn More</a>
+        </p>
+    </div>
 
-
-    <a href="{% url 'social:begin' 'drchrono' %}">
-      drchrono OAuth
-    </a>
-
-</body>
-</html>
+    <footer class="footer">
+        <p>Made with <a href="https://djangoproject.com">Django</a> and the <a href="https://www.drchrono.com/api/">
+            DrChrono API</a></p>
+    </footer>
+</div>
+{% endblock %}

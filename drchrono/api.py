@@ -1,3 +1,4 @@
+import datetime as dt
 import requests
 import urllib
 
@@ -7,6 +8,17 @@ class ApiError(Exception):
 
 class DrChrono(object):
     base_url = 'https://drchrono.com'
+    ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%S"
+
+    class Appointment(object):
+        STATUS_ARRIVED = "Arrived"
+        STATUS_IN_SESSION = "In Session"
+        STATUS_COMPLETE = "Complete"
+        STATUS_CONFIRMED = "Confirmed"
+        STATUS_NOT_CONFIRMED = "Not Confirmed"
+        STATUS_RESCHEDULED = "Rescheduled"
+        STATUS_CANCELLED = "Cancelled"
+        STATUS_NO_SHOW = "No Show"
 
     def __init__(self, access_token):
         self.access_token = access_token
@@ -47,10 +59,13 @@ class DrChrono(object):
         if not kwargs.get('since') and not kwargs.get('date') and not kwargs.get('date_range'):
             raise ValueError('Must supply at least one of `since`, `date`, or `date_range`')
 
-        return self.retreive_multi('/api/appointments', kwargs)
+        appointments = self.retreive_multi('/api/appointments', kwargs)
+        for a in appointments:
+            a['scheduled_time'] = dt.datetime.strptime(a['scheduled_time'], self.ISO_8601_FORMAT)
+            a['end_time'] =  a['scheduled_time'] + dt.timedelta(minutes=a['duration'])
+        return appointments
 
     def get_appointment(self, id):
-
         return self.retrieve_single('/api/appointments/%d' % id)
 
     def get_patients_summary(self, **kwargs):

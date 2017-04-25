@@ -1,3 +1,5 @@
 from django import forms
 
-# forms go here
+class CheckInSearchForm(forms.Form):
+    first_name = forms.CharField(required=True)
+    last_name = forms.CharField(required=True)

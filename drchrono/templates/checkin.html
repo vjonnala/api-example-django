@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block head_title %}Dashboard {{ block.super }}{% endblock %}
+{% block body %}
+
+{% if appointment %}
+
+{% else %}
+<div class="container">
+    <div class="jumbotron">
+      <div class="row">
+        <div class="col-xs-12 col-md-9">
+        <h1>Patient Self Check-In</h1>
+        <p class="lead">
+            Please enter your first and last name in the form to locate your appointment.
+        </p>
+        </div>
+        <div class="col-xs-12 col-md-3">
+            <form method="GET" action="" class="checkin-search-form">
+                {% for field in search_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    <div class="text-danger">{{ field.errors }}</div>
+
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-default">Look-up Appointment <i class="glyphicon glyphicon-search"></i></button>
+            </form>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+        <p>Made with <a href="https://djangoproject.com">Django</a> and the <a href="https://www.drchrono.com/api/">
+            DrChrono API</a></p>
+    </footer>
+</div>
+{% else %}
+<script type="text/javascript">
+$(document).ready(function(){
+    // Adds the Bootstrap 3 'form-control' class to all text inputs, since Django does not provide an easy
+    // way to add a class to a formfield
+    $('.checkin-search-form input[type=text]').addClass('form-control');
+})
+</script>
+
+
+{% endblock %}
