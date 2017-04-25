@@ -5,8 +5,18 @@
     <title>Dashboard</title>
 </head>
 <body>
-You are logged in as {{ request.user }}!
+You are logged in as {{ request.user }} ({{ access_token }}!
 
-{{ access_token }}
+{% if appointments|length %}
+  {% for a in appointments %}
+    <div>ID: {{ a.id }}<br/>
+    {{ a.status }}<br/>
+    {{ a.patient.last_name }}, {{ a.patient.first_name }}<br/>
+    {{ a.scheduled_time }}<br/>
+    {{ a.duration }}</div>
+  {% endfor %}
+{% else %}
+No appointments
+{% endif %}
 </body>
 </html>
