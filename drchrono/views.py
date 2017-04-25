@@ -1,5 +1,6 @@
 import datetime as dt
 
+from django.contrib import messages
 from django.shortcuts import redirect
 from django.views.generic import ListView, TemplateView
 
@@ -38,17 +39,27 @@ class CheckInView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(CheckInView, self).get_context_data()
-        search_query = CheckInSearchForm(self.request.GET)
-        if search_query.is_valid():
-            context['search_form'] = search_query
-            api = DrChrono(get_user_access_token(self.request.user))
-            for a in api.get_appointments(date=dt.date.today().isoformat()):
-                a['patient'] = api.get_patient(a['patient'])
-                if a['patient']['first_name'] == search_query.cleaned_data['first_name'] and \
-                                a['patient']['last_name'] == search_query.cleaned_data['last_name']:
-                    context['appointment'] = a
-                    break
-
+        if self.request.GET:
+            search_query = CheckInSearchForm(self.request.GET)
+            if search_query.is_valid():
+                api = DrChrono(get_user_access_token(self.request.user))
+                first_name = search_query.cleaned_data['first_name']
+                last_name = search_query.cleaned_data['last_name']
+                for a in api.get_appointments(date=dt.date.today().isoformat()):
+                    a['patient'] = api.get_patient(a['patient'])
+                    if a['patient']['first_name'] == first_name and a['patient']['last_name'] == last_name:
+                        context['appointment'] = a
+                        break
+                if context.get('appointment'):
+                    if a['status'] == DrChrono.Appointment.STATUS_ARRIVED:
+                        messages.info(self.request, 'Your appointment has already been checked-in.')
+                    elif a['status'] != DrChrono.Appointment.STATUS_CONFIRMED:
+                        messages.warning(self.request, 'Your appointment is not eligible for check-in (current status: %s).' % a['status'])
+                else:
+                    messages.error(self.request, 'No appointment was found for %s %s.' % (first_name, last_name))
+        else:
+            search_query = CheckInSearchForm()
 
         context['search_form'] = search_query
+        context['status_confirmed'] = DrChrono.Appointment.STATUS_CONFIRMED
         return context

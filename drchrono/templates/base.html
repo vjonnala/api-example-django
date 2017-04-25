@@ -52,7 +52,7 @@ body {
   border-color: #f5e79e;
   color: #8a6d3b;
 }
-.appointment-info .cancelled {
+.appointment-info .cancelled, .alert-error {
   background-image: -webkit-linear-gradient(top, #f2dede 0%, #e7c3c3 100%);
   background-image:      -o-linear-gradient(top, #f2dede 0%, #e7c3c3 100%);
   background-image: -webkit-gradient(linear, left top, left bottom, from(#f2dede), to(#e7c3c3));
@@ -65,6 +65,19 @@ body {
     </style>
 </head>
 <body>
+{% block messages %}
+{% if messages %}
+<div class="container">
+    <div class="row messages">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+
 {% block body %}
 {% endblock %}
 </body>
