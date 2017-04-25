@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load helper_tags %}
+{% block head_title %}Verify {{ block.super }}{% endblock %}
+{% block body %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <div><a class="btn btn-default pull-right" href="{% url 'checkin_view' %}"><i
+                            class="glyphicon glyphicon-arrow-left"></i> Start Over </a></div>
+                <h3 style="margin-top:0px;">Update Patient Information</h3>
+                <div class="alert alert-info">
+                    Please take a moment to review your details below and make any changes necessary to keep your
+                    record accurate.
+                </div>
+            </div>
+        </div>
+        <form method="POST" action="{% url 'verifyrecord_view' appointment.id %}" class="form-horizontal">
+            {% csrf_token %}
+            <div class="row">
+                {% for field in form %}
+
+                    <div class="col-xs-12 col-sm-6">
+                        <div class="form-group">
+                            <label class="col-sm-3" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            <div class="col-sm-9">
+                                {{ field|addclass:"form-control" }}
+                                <div class="text-danger">{{ field.errors }}</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="col-xs-12 text-center">
+                    <button type="submit" class="btn btn-primary">Update Information <i
+                            class="glyphicon glyphicon-arrow-right"></i></button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+{% endblock %}

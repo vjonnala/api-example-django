@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load helper_tags %}
-{% block head_title %}Dashboard {{ block.super }}{% endblock %}
+{% block head_title %}Check In {{ block.super }}{% endblock %}
 {% block body %}
 
 <div class="container">
@@ -16,9 +16,9 @@
                         ({{ appointment.duration }} minutes)</div>
                     <hr style="border-color: inherit; margin:5px 0px 5px 0px;">
                     {% if appointment.status == status_confirmed %}
-                        <a class="btn btn-primary pull-right" href="">Check-in</a>
+                        <a class="btn btn-primary pull-right" href="{% url 'verifyrecord_view' appointment.id %}">Check-in</a>
                     {% endif %}
-                    <div><a class="btn btn-default" href="{% url 'checkin_view' %}">Return</a></div>
+                    <div><a class="btn btn-default" href="{% url 'checkin_view' %}">Start Over</a></div>
                 </div>
             </div>
         </div>

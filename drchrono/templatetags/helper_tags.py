@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter(name='addclass')
 def addclass(field, className):
     cur_class = field.field.widget.attrs.get('class', None)

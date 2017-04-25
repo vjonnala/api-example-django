@@ -6,6 +6,7 @@ import urllib
 class ApiError(Exception):
     pass
 
+
 class DrChrono(object):
     base_url = 'https://drchrono.com'
     ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%S"
@@ -31,7 +32,6 @@ class DrChrono(object):
         return response.json()
 
     def retreive_multi(self, endpoint, params):
-        print params
         results = []
         url = self.base_url + endpoint + "?" + urllib.urlencode(params)
 
@@ -44,13 +44,19 @@ class DrChrono(object):
             url = data['next']
         return results
 
+    def update_single(self, endpoint, data):
+        response = requests.put(self.base_url + endpoint, data=data, headers=self.headers)
+        if response.status_code != 204:
+            raise ApiError(response.json())
+        return
+
     def get_appointments(self, **kwargs):
         """
         Retrieves a list of appointments.
 
         Filtering parameters:
             date : date : Only retrieve appointments that occur on the given date
-            date_range : date range :Retrieve appointments in a time period (inclusive). Cannot be longer than 190 days, unless it is in the past.
+            date_range : date range : Retrieve appointments in a time period (inclusive).
             doctor : integer : Only retrieve appointments for the doctor with the given ID
             office : integer : Only retrieve appointments for the office with the given ID
             patient : integer : Only retrieve appointments for the patient with the given ID
@@ -62,11 +68,25 @@ class DrChrono(object):
         appointments = self.retreive_multi('/api/appointments', kwargs)
         for a in appointments:
             a['scheduled_time'] = dt.datetime.strptime(a['scheduled_time'], self.ISO_8601_FORMAT)
-            a['end_time'] =  a['scheduled_time'] + dt.timedelta(minutes=a['duration'])
+            a['end_time'] = a['scheduled_time'] + dt.timedelta(minutes=a['duration'])
         return appointments
 
     def get_appointment(self, id):
         return self.retrieve_single('/api/appointments/%d' % id)
+
+    def put_appointment(self, id, data):
+        """
+        Updates an appointment record.
+
+        Required parameters in data:
+            doctor : integer : doctor id
+            duration : integer : Length of the appointment in minutes. Optional if profile is provided.
+            exam_room : integer : required : Index of the exam room that this appointment occurs in.
+            office : integer : required : Office ID
+            patient : integer or null : required : ID of this appointment's patient. Breaks have a null patient field.
+            scheduled_time : timestamp : required : The starting time of the appointment
+        """
+        return self.update_single('/api/appointments/%d' % id, data)
 
     def get_patients_summary(self, **kwargs):
         """Retrives a list of patients
@@ -84,3 +104,12 @@ class DrChrono(object):
     def get_patient(self, id):
         return self.retrieve_single('/api/patients/%d' % id)
 
+    def put_patient(self, id, data):
+        """
+        Updates a patient record.
+
+        Required parameters in data:
+            doctor : integer: ID of the patient's primary provider
+            gender : string : One of "Male", "Female", or "Other"
+        """
+        return self.update_single('/api/patients/%d' % id, data)
