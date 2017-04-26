@@ -156,7 +156,6 @@ class MetricsView(TemplateView):
                 num = (events['Complete'] - events['In Session']).total_seconds()
                 denom = int(app_details['duration'])*60
                 efficiencies.append(num / denom)
-        print efficiencies
         return {'mean': sum(efficiencies)/len(efficiencies),
                 'count': len(efficiencies)
                 }
@@ -170,8 +169,6 @@ class MetricsView(TemplateView):
             if 'In Session' in events:
                 app_details = self.appointments[appointment]
                 paces.append(events['In Session'] - make_aware(app_details['scheduled_time']))
-        print 'paces', paces
-
         return {'mean': format_timedelta(sum(paces, dt.timedelta(0))/len(paces)),
                 'count': len(paces)
                 }
