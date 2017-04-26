@@ -1,9 +1,12 @@
+from collections import defaultdict
 import datetime as dt
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, JsonResponse, QueryDict
 from django.shortcuts import redirect
+from django.utils.timezone import make_aware
 from django.views.generic import FormView, TemplateView, View
 
 from social_auth_drchrono.mixins import LoginRequiredMixin
@@ -11,7 +14,7 @@ from social_auth_drchrono.mixins import LoginRequiredMixin
 from .api import ApiError, DrChrono
 from .forms import CheckInSearchForm, DemographicForm
 from .models import AppointmentStatusHistory
-from .utils import get_user_access_token
+from .utils import format_timedelta, get_user_access_token
 
 
 class LandingPageView(TemplateView):
@@ -97,7 +100,7 @@ class VerifyRecordView(LoginRequiredMixin, FormView):
                 messages.error(self.request, 'There was an error when checking in for your appointment: %s' % str(e))
                 return HttpResponseRedirect(reverse('verifyrecord_view', args=[appointment_id]))
             else:
-                messages.success(self.request, 'You have successfully checked in for appointment.')
+                messages.success(self.request, 'You have successfully checked in for your appointment.')
                 a = AppointmentStatusHistory(appointment=appointment_id, status=DrChrono.Appointment.STATUS_ARRIVED)
                 try:
                     a.save()
@@ -106,13 +109,89 @@ class VerifyRecordView(LoginRequiredMixin, FormView):
         return HttpResponseRedirect(reverse('checkin_view'))
 
 
+class MetricsView(TemplateView):
+    template_name = 'metrics.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.history = AppointmentStatusHistory.objects.all()
+        self.api = DrChrono(get_user_access_token(self.request.user))
+        self.appointments = {ash.appointment: self.api.get_appointment(ash.appointment) for ash in self.history}
+        return super(MetricsView, self).dispatch(request, *args, **kwargs)
+
+    def get_wait_time(self):
+        appointment_events = defaultdict(dict)
+        for ash in self.history:
+            appointment_events[ash.appointment][ash.status] = ash.timestamp
+        wait_times = []
+        for appointment, events in appointment_events.iteritems():
+            if 'Arrived' in events and 'In Session' in events:
+                wait_times.append(events['In Session'] - events['Arrived'])
+        return {'mean': sum(wait_times, dt.timedelta(0))/len(wait_times),
+                'count': len(wait_times)
+                }
+
+    def get_patient_tardiness(self):
+        appointment_events = defaultdict(dict)
+        for ash in self.history:
+            appointment_events[ash.appointment][ash.status] = ash.timestamp
+        arrival_deltas = []
+        for appointment, events in appointment_events.iteritems():
+            if 'Arrived' in events:
+                app_details = self.appointments[appointment]
+                delta = (events['Arrived'] - make_aware(app_details['scheduled_time']))
+                arrival_deltas.append(delta)
+
+        return {'mean': format_timedelta(sum(arrival_deltas, dt.timedelta(0))/len(arrival_deltas)),
+                'count': len(arrival_deltas)
+                }
+
+    def get_appointment_efficiency(self):
+        appointment_events = defaultdict(dict)
+        for ash in self.history:
+            appointment_events[ash.appointment][ash.status] = ash.timestamp
+        efficiencies = []
+        for appointment, events in appointment_events.iteritems():
+            if 'Complete' in events:
+                app_details = self.appointments[appointment]
+                num = (events['Complete'] - events['In Session']).total_seconds()
+                denom = int(app_details['duration'])*60
+                efficiencies.append(num / denom)
+        print efficiencies
+        return {'mean': sum(efficiencies)/len(efficiencies),
+                'count': len(efficiencies)
+                }
+
+    def get_pace_integrity(self):
+        appointment_events = defaultdict(dict)
+        for ash in self.history:
+            appointment_events[ash.appointment][ash.status] = ash.timestamp
+        paces = []
+        for appointment, events in appointment_events.iteritems():
+            if 'In Session' in events:
+                app_details = self.appointments[appointment]
+                paces.append(events['In Session'] - make_aware(app_details['scheduled_time']))
+        print 'paces', paces
+
+        return {'mean': format_timedelta(sum(paces, dt.timedelta(0))/len(paces)),
+                'count': len(paces)
+                }
+
+    def get_context_data(self, **kwargs):
+        context = super(MetricsView, self).get_context_data(**kwargs)
+        context['wait_time'] = self.get_wait_time()
+        context['patient_tardiness'] = self.get_patient_tardiness()
+        context['appointment_efficiency'] = self.get_appointment_efficiency()
+        context['pace_integrity'] = self.get_pace_integrity()
+        return context
+
+
 class AjaxUpdateAppointmentStatus(View):
     http_method_names = [u'put']
 
     def put(self, request, *args, **kwargs):
         request.PUT = QueryDict(request.body)
         if 'appointment' not in request.PUT:
-            return JsonResponse({'error':'appointment is required'}, status=400)
+            return JsonResponse({'error': 'appointment is required'}, status=400)
         if 'status' not in request.PUT:
             return JsonResponse({'error': 'status is required'}, status=400)
         api = DrChrono(get_user_access_token(request.user))
@@ -123,7 +202,7 @@ class AjaxUpdateAppointmentStatus(View):
         except ApiError as e:
             return JsonResponse(
                 {'error': 'An error occurred updating appointment %s: %s' % (appointment['id'], str(e))},
-                 status=500
+                status=500
             )
         appointment = api.get_appointment(int(appointment['id']), fetch_patient=True)
         AppointmentStatusHistory.annotate_appointments([appointment])
@@ -134,9 +213,10 @@ class AjaxUpdateAppointmentStatus(View):
             return JsonResponse(
                 {'error': 'An error occurred recording AppointmentStatusHistory %s/%s: %s' %
                           (appointment['id'], request.PUT['status'], str(e))},
-                 status=500
+                status=500
             )
         return JsonResponse(appointment, status=200)
+
 
 class AjaxGetAppointments(View):
     http_method_names = [u'get']

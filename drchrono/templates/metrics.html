@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block head_title %}Dashboard {{ block.super }}{% endblock %}
+{% block body %}
+
+    {% include "nav.html" %}
+    {% block messages %}{{ block.super }}{% endblock %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-6">
+                <div class="well">
+                    <div class="text-center">
+                        Average Wait Time: {{ wait_time.mean }} (N={{ wait_time.count }})
+                    </div>
+                    <hr>
+                    <em>Average Wait Time is the average of the difference of (patient arrival - appointment beginning)
+                        for all appoinments
+                        that have begun.</em>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 ">
+                <div class="well">
+                    <div class="text-center">
+                        Patient Tardiness: {{ patient_tardiness.mean }} (N={{ patient_tardiness.count }})
+                    </div>
+                    <hr>
+                    <em>Patient Tardiness is the average of the difference of (patient arrival - scheduled appointment
+                        beginning) for all appointments where patients have arrived. </em>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <div class="well">
+                    <div class="text-center">
+                        Appointment Efficiency: {{ appointment_efficiency.mean }} (N={{ appointment_efficiency.count }})
+                    </div>
+                    <hr>
+                    <em>Appointment Efficiency is the average of the ratio of (actual duration / scheduled duration) for
+                        all appointments which have completed. </em>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6 text-center">
+                <div class="well">
+                    <div class="text-center">
+                        Pace Integrity: {{ pace_integrity.mean }} (N={{ pace_integrity.count }})
+                    </div>
+                    <hr>
+                    <em>Pace Integrity is the average difference of (actual appointment beginning - scheduled
+                        appointment beginning) for all appointments which have begun. </em>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -9,6 +9,7 @@ class AppointmentStatusHistory(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     appointment = models.IntegerField()
     status = models.CharField(max_length=20)
+
     class Meta:
         unique_together = ('appointment', 'status')
 
@@ -26,4 +27,3 @@ class AppointmentStatusHistory(models.Model):
                 a['session_begin'] = lookup_table[int(a['id'])][DrChrono.Appointment.STATUS_IN_SESSION]
             if DrChrono.Appointment.STATUS_COMPLETE in lookup_table[int(a['id'])]:
                 a['session_end'] = lookup_table[int(a['id'])][DrChrono.Appointment.STATUS_COMPLETE]
-
