@@ -9,6 +9,9 @@ $(document).ready(function(){
 </script>
 <div class="container">
     {% if appointment %}
+        <script type="text/javascript">
+        start_idle_timer(30, '{% url 'checkin_view' %}')
+        </script>
         <div class="row">
             <div class="col-xs-12 col-md-6 col-md-offset-3 appointment-info" data-appointment-id="{{ a.id }}">
                 <div class="alert {{ appointment.status|slugify }}">
