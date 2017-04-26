@@ -10,6 +10,7 @@ from social_auth_drchrono.mixins import LoginRequiredMixin
 
 from .api import ApiError, DrChrono
 from .forms import CheckInSearchForm, DemographicForm
+from .models import AppointmentStatusHistory
 from .utils import get_user_access_token
 
 
@@ -82,20 +83,26 @@ class VerifyRecordView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         data = form.cleaned_data
         data.update({'doctor': self.patient['doctor']})
+        appointment_id = int(self.appointment['id'])
         try:
             self.api.put_patient(self.patient['id'], data)
         except ApiError as e:
             messages.error(self.request, "There was an error when updating your information: %s" % str(e))
-            return HttpResponseRedirect(reverse('verifyrecord_view', args=[self.appointment['id']]))
+            return HttpResponseRedirect(reverse('verifyrecord_view', args=[appointment_id]))
         else:
             try:
                 self.appointment['status'] = DrChrono.Appointment.STATUS_ARRIVED
-                self.api.put_appointment(int(self.appointment['id']), self.appointment)
+                self.api.put_appointment(appointment_id, self.appointment)
             except ApiError as e:
                 messages.error(self.request, 'There was an error when checking in for your appointment: %s' % str(e))
-                return HttpResponseRedirect(reverse('verifyrecord_view', args=[self.appointment['id']]))
+                return HttpResponseRedirect(reverse('verifyrecord_view', args=[appointment_id]))
             else:
                 messages.success(self.request, 'You have successfully checked in for appointment.')
+                a = AppointmentStatusHistory(appointment=appointment_id, status=DrChrono.Appointment.STATUS_ARRIVED)
+                try:
+                    a.save()
+                except Exception as e:
+                    messages.error(self.request, 'The kiosk was unable to record the time at which you checked-in.')
         return HttpResponseRedirect(reverse('checkin_view'))
 
 
@@ -119,6 +126,16 @@ class AjaxUpdateAppointmentStatus(View):
                  status=500
             )
         appointment = api.get_appointment(int(appointment['id']), fetch_patient=True)
+        AppointmentStatusHistory.annotate_appointments([appointment])
+        try:
+            a = AppointmentStatusHistory(appointment=appointment['id'], status=request.PUT['status'])
+            a.save()
+        except Exception as e:
+            return JsonResponse(
+                {'error': 'An error occurred recording AppointmentStatusHistory %s/%s: %s' %
+                          (appointment['id'], request.PUT['status'], str(e))},
+                 status=500
+            )
         return JsonResponse(appointment, status=200)
 
 class AjaxGetAppointments(View):
@@ -127,4 +144,5 @@ class AjaxGetAppointments(View):
     def get(self, request, *args, **kwargs):
         api = DrChrono(get_user_access_token(request.user))
         appointments = api.get_appointments(date=dt.date.today().isoformat(), fetch_patient=True)
+        AppointmentStatusHistory.annotate_appointments(appointments)
         return JsonResponse({'results': appointments}, status=200)

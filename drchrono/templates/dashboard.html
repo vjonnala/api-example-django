@@ -26,6 +26,59 @@ Handlebars.registerHelper('default', function(value, defaultValue) {
     ? defaultValue
     : value;
 });
+Handlebars.registerHelper("formatDateTime", function(timestamp, format) {
+    timestamp = moment(timestamp);
+    return timestamp.format(format);
+});
+Handlebars.registerHelper("timeSince", function(then) {
+    var then = moment(then);
+    var now = moment(new Date());
+    return moment.duration(now.diff(then)).humanize()
+});
+Handlebars.registerHelper("timeDiff", function(a,b) {
+    var a = moment(a);
+    var b = moment(b);
+    return moment.duration(a.diff(b)).humanize()
+});
+Handlebars.registerHelper('compare', function (lvalue, operator, rvalue, options) {
+    // Source: http://doginthehat.com.au/2012/02/comparison-block-helper-for-handlebars-templates/#comment-44
+    var operators, result;
+
+    if (arguments.length < 3) {
+        throw new Error("Handlerbars Helper 'compare' needs 2 parameters");
+    }
+
+    if (options === undefined) {
+        options = rvalue;
+        rvalue = operator;
+        operator = "===";
+    }
+
+    operators = {
+        '==': function (l, r) { return l == r; },
+        '===': function (l, r) { return l === r; },
+        '!=': function (l, r) { return l != r; },
+        '!==': function (l, r) { return l !== r; },
+        '<': function (l, r) { return l < r; },
+        '>': function (l, r) { return l > r; },
+        '<=': function (l, r) { return l <= r; },
+        '>=': function (l, r) { return l >= r; },
+        'typeof': function (l, r) { return typeof l == r; }
+    };
+
+    if (!operators[operator]) {
+        throw new Error("Handlerbars Helper 'compare' doesn't know the operator " + operator);
+    }
+
+    result = operators[operator](lvalue, rvalue);
+
+    if (result) {
+        return options.fn(this);
+    } else {
+        return options.inverse(this);
+    }
+
+});
 
 function update_appointment_status(appointment_id, status){
     $.ajax({
@@ -33,8 +86,6 @@ function update_appointment_status(appointment_id, status){
         method: 'PUT',
         data: {'appointment': appointment_id, 'status': status}
     }).done(function(data){
-        data['arrived'] = data['status'] == 'Arrived';
-        data['insession'] = data['status'] == 'In Session';
         var html = assignment_template(data);
         $('[data-appointment-id='+appointment_id+']').replaceWith(html);
     });
@@ -46,11 +97,11 @@ function load_appointments(){
     }).done(function(data){
         var results = data['results'];
         var appointment_html = "";
+        appointment_html += "<a class='pull-right btn btn-default' onclick='load_appointments();'>Refresh</a>";
+        appointment_html += "<h3>Appointments:</h3><hr>";
         if(results.length > 0){
             for(var i=0; i<results.length; i++){
                 var appointment = results[i];
-                appointment['arrived'] = appointment['status'] == 'Arrived';
-                appointment['insession'] = appointment['status'] == 'In Session';
                 var html = assignment_template(appointment);
                 appointment_html += html;
             }
@@ -74,22 +125,45 @@ $(document).ready(function(){
 <script id="appointment-template" type="text/x-handlebars-template">
   <div class="col-xs-12 col-md-6 appointment-info" data-appointment-id="{{ id }}">
     <div class="alert {{ slugify status }}">
-      <div class="status pull-right">{{ default status 'No Status!'}}</div>
+      <div class="status pull-right">{{ default status 'No Status!'}}
+          {{#compare status 'Arrived' }}
+            ({{ timeSince arrived }} ago)
+          {{/compare }}
+          {{#compare status 'In Session' }}
+            ({{ timeSince session_begin }})
+          {{/compare }}
+          {{#compare status 'Complete' }}
+            (Session Runtime: {{ timeDiff session_end session_begin}}, Wait Time: {{ timeDiff session_begin arrived  }})
+          {{/compare }}
+      </div>
       <div class="patient">{{ patient.last_name }}, {{ patient.first_name }}</div>
-      <div class="scheduled_time">{{ scheduled_time }}, {{ end_time }}, {{ duration }} minutes</div>
-      {{# if arrived }}
+      <div class="scheduled_time">
+          Scheduled: {{ formatDateTime scheduled_time 'YYYY-MM-DD hh:mm A'}} -
+          {{ formatDateTime end_time 'YYYY-MM-DD hh:mm A' }} ({{ duration }} minutes)
+          <ul>
+          {{#if arrived }}
+              <li>Patient Arrival: {{ formatDateTime arrived 'YYYY-MM-DD hh:mm A'}}</li>
+          {{/if }}
+          {{#if session_begin }}
+              <li>Session Began: {{ formatDateTime session_begin 'YYYY-MM-DD hh:mm A'}}</li>
+          {{/if }}
+          {{#if session_end }}
+              <li>Session Completed: {{ formatDateTime session_end 'YYYY-MM-DD hh:mm A'}}</li>
+          {{/if}}
+          </ul>
+      </div>
+      {{#compare status 'Arrived' }}
       <button class="btn btn-primary appointment-action"
               onclick="$(this).prop('disabled', 'disabled');update_appointment_status({{ id }}, 'In Session')">
           Begin Session
       </button>
-      {{/if}}
-        {{ log insession }}
-      {{# if insession }}
+      {{/compare }}
+      {{#compare status 'In Session'}}
       <button class="btn btn-primary appointment-action"
               onclick="$(this).prop('disabled', 'disabled');update_appointment_status({{ id }}, 'Complete')">
           Complete Session
       </button>
-      {{/if}}
+      {{/compare }}
       </div>
   </div>
 </script>
