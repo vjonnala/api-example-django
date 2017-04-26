@@ -269,4 +269,3 @@ class SignCreateView(CreateView):
 
 class SignListView(ListView):
     model = Sign
-

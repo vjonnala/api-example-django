@@ -11,6 +11,7 @@ def addclass(field, className):
     new_class = "%s %s" % (cur_class, className)
     return field.as_widget(attrs={"class": new_class})
 
+
 @register.simple_tag
 def get_row_class_for_response_answer(answer):
     lookup_table = {

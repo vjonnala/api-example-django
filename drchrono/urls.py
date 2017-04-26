@@ -1,5 +1,5 @@
+from django.conf import settings
 from django.conf.urls import include, url
-from django.views.generic import TemplateView
 
 from .views import AjaxGetAppointments, \
     AjaxUpdateAppointmentStatus, \
@@ -25,7 +25,8 @@ urlpatterns = [
     url(r'^ajax/get_appointments$', AjaxGetAppointments.as_view(), name='ajax_get_appointments'),
 
     # CheckOut Survey
-    url(r'^checkout/(?P<appointment>\d+)', CheckOutSurveyResponseCreateView.as_view(), name='checkoutsurveyresponse_create'),
+    url(r'^checkout/(?P<appointment>\d+)',
+        CheckOutSurveyResponseCreateView.as_view(), name='checkoutsurveyresponse_create'),
     url(r'^checkout/list', CheckOutSurveyResponseListView.as_view(), name='checkoutsurveyresponse_list'),
 
     # Digital Signage
@@ -35,8 +36,8 @@ urlpatterns = [
     url(r'', include('social.apps.django_app.urls', namespace='social')),
 ]
 
-from django.conf import settings
-if settings.DEBUG == True:
+
+if settings.DEBUG:
     urlpatterns += [
         url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
             'document_root': settings.MEDIA_ROOT,
