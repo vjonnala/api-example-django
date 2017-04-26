@@ -2,7 +2,11 @@
 {% load helper_tags %}
 {% block head_title %}Check In {{ block.super }}{% endblock %}
 {% block body %}
-
+<script type="text/javascript">
+$(document).ready(function(){
+    $('.row.messages').delay(30000).fadeOut()
+})
+</script>
 <div class="container">
     {% if appointment %}
         <div class="row">
