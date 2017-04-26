@@ -4,6 +4,8 @@ from django.views.generic import TemplateView
 from .views import AjaxGetAppointments, \
     AjaxUpdateAppointmentStatus, \
     CheckInView, \
+    CheckOutSurveyResponseCreateView, \
+    CheckOutSurveyResponseListView, \
     DashboardView, \
     LandingPageView, \
     MetricsView, \
@@ -19,5 +21,10 @@ urlpatterns = [
     url(r'^ajax/update_appointment_status$',
         AjaxUpdateAppointmentStatus.as_view(), name='ajax_update_appointment_status'),
     url(r'^ajax/get_appointments$', AjaxGetAppointments.as_view(), name='ajax_get_appointments'),
+
+    # CheckOut Survey
+    url(r'^checkout/(?P<appointment>\d+)', CheckOutSurveyResponseCreateView.as_view(), name='checkoutsurveyresponse_create'),
+    url(r'^checkout/list', CheckOutSurveyResponseListView.as_view(), name='checkoutsurveyresponse_list'),
+
     url(r'', include('social.apps.django_app.urls', namespace='social')),
 ]

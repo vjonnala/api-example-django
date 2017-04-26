@@ -17,8 +17,9 @@ body {
     <div id="navbar" class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
         <li class=""><a href="{% url 'dashboard_view' %}">Dashboard</a></li>
-        <li class=""><a href="{% url 'checkin_view' %}">Patient Check-In</a></li>
         <li class=""><a href="{% url 'metrics_view' %}">Metrics</a></li>
+        <li class=""><a href="{% url 'checkoutsurveyresponse_list' %}">Survey Responses</a></li>
+        <li class=""><a href="{% url 'checkin_view' %}">Patient Check-In</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">

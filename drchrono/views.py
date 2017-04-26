@@ -6,13 +6,13 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, JsonResponse, QueryDict
 from django.shortcuts import redirect
 from django.utils.timezone import make_aware
-from django.views.generic import FormView, TemplateView, View
+from django.views.generic import CreateView, FormView, ListView, TemplateView, View
 
 from social_auth_drchrono.mixins import LoginRequiredMixin
 
 from .api import ApiError, DrChrono
 from .forms import CheckInSearchForm, DemographicForm
-from .models import AppointmentStatusHistory
+from .models import AppointmentStatusHistory, CheckOutSurveyResponse
 from .utils import format_timedelta, get_user_access_token
 
 
@@ -60,6 +60,7 @@ class CheckInView(LoginRequiredMixin, TemplateView):
 
         context['search_form'] = search_query
         context['status_confirmed'] = DrChrono.Appointment.STATUS_CONFIRMED
+        context['status_complete'] = DrChrono.Appointment.STATUS_COMPLETE
         return context
 
 
@@ -222,3 +223,35 @@ class AjaxGetAppointments(View):
         appointments = api.get_appointments(date=dt.date.today().isoformat(), fetch_patient=True)
         AppointmentStatusHistory.annotate_appointments(appointments)
         return JsonResponse({'results': appointments}, status=200)
+
+
+class CheckOutSurveyResponseCreateView(CreateView):
+    model = CheckOutSurveyResponse
+    fields = ['q_explain', 'q_listening', 'q_instructions', 'q_history', 'q_respect']
+
+    def dispatch(self, request, *args, **kwargs):
+        print kwargs
+        if CheckOutSurveyResponse.objects.filter(appointment=kwargs['appointment']).exists():
+            messages.warning(request, "You have already provided a survey response for that appointment.")
+            return HttpResponseRedirect(self.get_success_url())
+        self.api = DrChrono(get_user_access_token(request.user))
+        self.appointment = self.api.get_appointment(int(kwargs['appointment']))
+        return super(CheckOutSurveyResponseCreateView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(CheckOutSurveyResponseCreateView, self).get_context_data(**kwargs)
+        context['appointment'] = self.appointment
+        return context
+
+    def get_success_url(self):
+        return reverse('checkin_view')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.appointment = self.appointment['id']
+        self.object.save()
+        messages.success(self.request, "Thank you for providing your feedback")
+        return HttpResponseRedirect(self.get_success_url())
+
+class CheckOutSurveyResponseListView(ListView):
+    model = CheckOutSurveyResponse

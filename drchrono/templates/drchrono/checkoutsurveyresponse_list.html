@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load  helper_tags staticfiles %}
+{% block head_title %}Survey Responses {{ block.super }}{% endblock %}
+{% block body %}
+
+{% include "nav.html" %}
+
+{% block messages %}{{ block.super }}{% endblock %}
+<script type="text/javascript">
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+</script>
+<div class="container">
+  <div class="row" id="appointment-row">
+      <div class="col-xs-12 text-center">
+        <table class="table table-striped">
+          <tr>
+            <th style="width:20%">
+                Q1
+                <i class="glyphicon glyphicon-question-sign"
+                data-toggle="tooltip" data-placement="bottom"
+                title="Did the doctor explain things in a way that was easy to understand?"></i>
+            </th>
+            <th style="width:20%">
+                Q2
+                <i class="glyphicon glyphicon-question-sign"
+                data-toggle="tooltip" data-placement="bottom"
+                title="Did the doctor listen carefully to you?"></i>
+            </th>
+            <th style="width:20%">
+                Q3
+                <i class="glyphicon glyphicon-question-sign"
+                data-toggle="tooltip" data-placement="bottom"
+                title="Did the doctor give you easy to understand instructions about taking care of your health problems or concerns?"></i>
+            </th>
+            <th style="width:20%">
+                Q4
+                <i class="glyphicon glyphicon-question-sign"
+                data-toggle="tooltip" data-placement="bottom"
+                title="Did the doctor seem to know the important information about your medical history?"></i>
+            </th>
+            <th style="width:20%">
+                Q5
+                <i class="glyphicon glyphicon-question-sign"
+                data-toggle="tooltip" data-placement="bottom"
+                title="Did the doctor show respect for what you had to say?"></i>
+            </th>
+          </tr>
+        {% for response in object_list %}
+          <tr>
+            <td class="{% get_row_class_for_response_answer response.q_explain %}">{{ response.q_explain }}</td>
+            <td class="{% get_row_class_for_response_answer response.q_listening %}">{{ response.q_listening }}</td>
+            <td class="{% get_row_class_for_response_answer response.q_instructions %}">{{ response.q_instructions }}</td>
+            <td class="{% get_row_class_for_response_answer response.q_history %}">{{ response.q_history }}</td>
+            <td class="{% get_row_class_for_response_answer response.q_respect %}">{{ response.q_respect }}</td>
+          </tr>
+        {% endfor %}
+        </table>
+      </div>
+  </div>
+</div>
+
+
+{% endblock %}

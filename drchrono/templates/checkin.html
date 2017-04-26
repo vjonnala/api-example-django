@@ -25,6 +25,9 @@ $(document).ready(function(){
                     {% if appointment.status == status_confirmed %}
                         <a class="btn btn-primary pull-right" href="{% url 'verifyrecord_view' appointment.id %}">Check-in</a>
                     {% endif %}
+                    {% if appointment.status == status_complete %}
+                        <a class="btn btn-primary pull-right" href="{% url 'checkoutsurveyresponse_create' appointment.id %}">Check-out Survey</a>
+                    {% endif %}
                     <div><a class="btn btn-default" href="{% url 'checkin_view' %}">Go Back</a></div>
                 </div>
             </div>
