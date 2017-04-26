@@ -13,7 +13,7 @@
                         Average Wait Time: {{ wait_time.mean }} (N={{ wait_time.count }})
                     </div>
                     <hr>
-                    <em>Average Wait Time is the average of the difference of (patient arrival - appointment beginning)
+                    <em>Average Wait Time is the average of the difference of (appointment beginning - patient arrival)
                         for all appoinments
                         that have begun.</em>
                 </div>
@@ -35,17 +35,19 @@
                     </div>
                     <hr>
                     <em>Appointment Efficiency is the average of the ratio of (actual duration / scheduled duration) for
-                        all appointments which have completed. </em>
+                        all appointments which have completed. Less than 1, and scheduling may be inefficient. Greater
+                        than 1, and appointments are running too long and delays snowball.</em>
                 </div>
             </div>
             <div class="col-xs-12 col-md-6 text-center">
                 <div class="well">
                     <div class="text-center">
-                        Pace Integrity: {{ pace_integrity.mean }} (N={{ pace_integrity.count }})
+                        Schedule Pace Integrity: {{ pace_integrity.mean }} (N={{ pace_integrity.count }})
                     </div>
                     <hr>
-                    <em>Pace Integrity is the average difference of (actual appointment beginning - scheduled
-                        appointment beginning) for all appointments which have begun. </em>
+                    <em>Schedule Pace Integrity is the average difference of (actual appointment beginning - scheduled
+                        appointment beginning) for all appointments which have begun. This is a measure of how
+                        well the physician/office keep the schedule.</em>
                 </div>
             </div>
         </div>
