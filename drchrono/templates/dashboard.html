@@ -7,20 +7,92 @@
 {% block messages %}{{ block.super }}{% endblock %}
 <!-- {{ access_token }} -->
 <div class="container">
-  <div class="row">
-  {% if appointments|length %}
-    {% for a in appointments %}
-        <div class="col-xs-12 col-md-6 appointment-info" data-appointment-id="{{ a.id }}">
-            <div class="alert {{ a.status|slugify }}">
-                <div class="status pull-right">{{ a.status|default:"No Status!" }}</div>
-                <div class="patient">{{ a.patient.last_name }}, {{ a.patient.first_name }}</div>
-                <div class="scheduled_time">{{ a.scheduled_time }}, {{ a.end_time }}, {{ a.duration }} minutes</div>
-            </div>
-        </div>
-    {% endfor %}
-  {% else %}
-    No appointments
-  {% endif %}
+  <div class="row" id="appointment-row">
+      <div class="col-xs-12 text-center">
+        <h1><i class="fa fa-cog fa-spin fa-fw"></i> Loading Appointments</h1>
+      </div>
   </div>
 </div>
+
+
+<script type="text/javascript">
+Handlebars.registerHelper('slugify', function(text) {
+    text = Handlebars.Utils.escapeExpression(text);
+    text = text.replace(/\s+/g, '-').toLowerCase();
+    return new Handlebars.SafeString(text);
+});
+Handlebars.registerHelper('default', function(value, defaultValue) {
+  return value == null
+    ? defaultValue
+    : value;
+});
+
+function update_appointment_status(appointment_id, status){
+    $.ajax({
+        url: '{% url 'ajax_update_appointment_status' %}',
+        method: 'PUT',
+        data: {'appointment': appointment_id, 'status': status}
+    }).done(function(data){
+        data['arrived'] = data['status'] == 'Arrived';
+        data['insession'] = data['status'] == 'In Session';
+        var html = assignment_template(data);
+        $('[data-appointment-id='+appointment_id+']').replaceWith(html);
+    });
+}
+
+function load_appointments(){
+    $.ajax({
+        url: '{% url 'ajax_get_appointments' %}'
+    }).done(function(data){
+        var results = data['results'];
+        var appointment_html = "";
+        if(results.length > 0){
+            for(var i=0; i<results.length; i++){
+                var appointment = results[i];
+                appointment['arrived'] = appointment['status'] == 'Arrived';
+                appointment['insession'] = appointment['status'] == 'In Session';
+                var html = assignment_template(appointment);
+                appointment_html += html;
+            }
+        }
+        else{
+            appointment_html = "No appointments."
+        }
+        $('#appointment-row').html(appointment_html);
+    });
+}
+$(document).ready(function(){
+    assignment_template =  Handlebars.compile($("#appointment-template").html());
+    $('#appointment-row').masonry();
+    load_appointments();
+});
+
+
+
+</script>
+{% verbatim %}
+<script id="appointment-template" type="text/x-handlebars-template">
+  <div class="col-xs-12 col-md-6 appointment-info" data-appointment-id="{{ id }}">
+    <div class="alert {{ slugify status }}">
+      <div class="status pull-right">{{ default status 'No Status!'}}</div>
+      <div class="patient">{{ patient.last_name }}, {{ patient.first_name }}</div>
+      <div class="scheduled_time">{{ scheduled_time }}, {{ end_time }}, {{ duration }} minutes</div>
+      {{# if arrived }}
+      <button class="btn btn-primary appointment-action"
+              onclick="$(this).prop('disabled', 'disabled');update_appointment_status({{ id }}, 'In Session')">
+          Begin Session
+      </button>
+      {{/if}}
+        {{ log insession }}
+      {{# if insession }}
+      <button class="btn btn-primary appointment-action"
+              onclick="$(this).prop('disabled', 'disabled');update_appointment_status({{ id }}, 'Complete')">
+          Complete Session
+      </button>
+      {{/if}}
+      </div>
+  </div>
+</script>
+{% endverbatim %}
+
 {% endblock %}

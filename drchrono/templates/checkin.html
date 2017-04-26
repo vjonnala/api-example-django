@@ -18,7 +18,7 @@
                     {% if appointment.status == status_confirmed %}
                         <a class="btn btn-primary pull-right" href="{% url 'verifyrecord_view' appointment.id %}">Check-in</a>
                     {% endif %}
-                    <div><a class="btn btn-default" href="{% url 'checkin_view' %}">Start Over</a></div>
+                    <div><a class="btn btn-default" href="{% url 'checkin_view' %}">Go Back</a></div>
                 </div>
             </div>
         </div>

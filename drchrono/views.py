@@ -2,9 +2,9 @@ import datetime as dt
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse, QueryDict
 from django.shortcuts import redirect
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView, TemplateView, View
 
 from social_auth_drchrono.mixins import LoginRequiredMixin
 
@@ -18,25 +18,12 @@ class LandingPageView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated():
-            return redirect('dashboard_view')
+            return redirect('checkin_view')
         return super(LandingPageView, self).dispatch(request, args, kwargs)
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard.html'
-
-    def get_appointments(self):
-        api = DrChrono(get_user_access_token(self.request.user))
-        appointments = api.get_appointments(date=dt.date.today().isoformat())
-        for a in appointments:
-            a['patient'] = api.get_patient(a['patient'])
-        return appointments
-
-    def get_context_data(self, **kwargs):
-        context = super(DashboardView, self).get_context_data(**kwargs)
-        context['access_token'] = get_user_access_token(self.request.user)
-        context['appointments'] = self.get_appointments()
-        return context
 
 
 class CheckInView(LoginRequiredMixin, TemplateView):
@@ -50,6 +37,7 @@ class CheckInView(LoginRequiredMixin, TemplateView):
                 api = DrChrono(get_user_access_token(self.request.user))
                 first_name = search_query.cleaned_data['first_name']
                 last_name = search_query.cleaned_data['last_name']
+                a = None
                 for a in api.get_appointments(date=dt.date.today().isoformat()):
                     a['patient'] = api.get_patient(a['patient'])
                     if a['patient']['first_name'] == first_name and a['patient']['last_name'] == last_name:
@@ -98,14 +86,45 @@ class VerifyRecordView(LoginRequiredMixin, FormView):
             self.api.put_patient(self.patient['id'], data)
         except ApiError as e:
             messages.error(self.request, "There was an error when updating your information: %s" % str(e))
-            return HttpResponseRedirect(reverse('verifyrecord_view', self.appointment['id']))
+            return HttpResponseRedirect(reverse('verifyrecord_view', args=[self.appointment['id']]))
         else:
             try:
                 self.appointment['status'] = DrChrono.Appointment.STATUS_ARRIVED
                 self.api.put_appointment(int(self.appointment['id']), self.appointment)
             except ApiError as e:
                 messages.error(self.request, 'There was an error when checking in for your appointment: %s' % str(e))
-                return HttpResponseRedirect(reverse('verifyrecord_view', self.appointment['id']))
+                return HttpResponseRedirect(reverse('verifyrecord_view', args=[self.appointment['id']]))
             else:
                 messages.success(self.request, 'You have successfully checked in for appointment.')
         return HttpResponseRedirect(reverse('checkin_view'))
+
+
+class AjaxUpdateAppointmentStatus(View):
+    http_method_names = [u'put']
+
+    def put(self, request, *args, **kwargs):
+        request.PUT = QueryDict(request.body)
+        if 'appointment' not in request.PUT:
+            return JsonResponse({'error':'appointment is required'}, status=400)
+        if 'status' not in request.PUT:
+            return JsonResponse({'error': 'status is required'}, status=400)
+        api = DrChrono(get_user_access_token(request.user))
+        appointment = api.get_appointment(int(request.PUT['appointment']))
+        appointment['status'] = request.PUT['status']
+        try:
+            api.put_appointment(int(appointment['id']), appointment)
+        except ApiError as e:
+            return JsonResponse(
+                {'error': 'An error occurred updating appointment %s: %s' % (appointment['id'], str(e))},
+                 status=500
+            )
+        appointment = api.get_appointment(int(appointment['id']), fetch_patient=True)
+        return JsonResponse(appointment, status=200)
+
+class AjaxGetAppointments(View):
+    http_method_names = [u'get']
+
+    def get(self, request, *args, **kwargs):
+        api = DrChrono(get_user_access_token(request.user))
+        appointments = api.get_appointments(date=dt.date.today().isoformat(), fetch_patient=True)
+        return JsonResponse({'results': appointments}, status=200)

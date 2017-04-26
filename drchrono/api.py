@@ -25,6 +25,13 @@ class DrChrono(object):
         self.access_token = access_token
         self.headers = {'Authorization': 'Bearer %s' % self.access_token}
 
+    def annotate_appointment(self, a, fetch_patient=False):
+        a['scheduled_time'] = dt.datetime.strptime(a['scheduled_time'], self.ISO_8601_FORMAT)
+        a['end_time'] = a['scheduled_time'] + dt.timedelta(minutes=a['duration'])
+        if fetch_patient:
+            a['patient'] = self.get_patient(a['patient'])
+        return a
+
     def retrieve_single(self, endpoint):
         response = requests.get(self.base_url + endpoint, headers=self.headers)
         if response.status_code != 200:
@@ -65,14 +72,14 @@ class DrChrono(object):
         if not kwargs.get('since') and not kwargs.get('date') and not kwargs.get('date_range'):
             raise ValueError('Must supply at least one of `since`, `date`, or `date_range`')
 
+        fetch_patient = kwargs.pop('fetch_patient', False)
         appointments = self.retreive_multi('/api/appointments', kwargs)
         for a in appointments:
-            a['scheduled_time'] = dt.datetime.strptime(a['scheduled_time'], self.ISO_8601_FORMAT)
-            a['end_time'] = a['scheduled_time'] + dt.timedelta(minutes=a['duration'])
+            a = self.annotate_appointment(a, fetch_patient)
         return appointments
 
-    def get_appointment(self, id):
-        return self.retrieve_single('/api/appointments/%d' % id)
+    def get_appointment(self, id, fetch_patient=False):
+        return self.annotate_appointment(self.retrieve_single('/api/appointments/%d' % id), fetch_patient)
 
     def put_appointment(self, id, data):
         """

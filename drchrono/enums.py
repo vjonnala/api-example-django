@@ -2,17 +2,17 @@ GENDER_MALE = "Male"
 GENDER_FEMALE = "Female"
 GENDER_OTHER = "Other"
 
-ETHNICITY_BLACK = 'Black'
-ETHNICITY_HISPANIC = 'Hispanic'
-ETHNICITY_NOT_HISPANIC = 'Not Hispanic'
-ETHNICITY_DECLINED = 'Declined'
+ETHNICITY_BLANK = 'blank'
+ETHNICITY_HISPANIC = 'hispanic'
+ETHNICITY_NOT_HISPANIC = 'not_hispanic'
+ETHNICITY_DECLINED = 'declined'
 
-RACE_BLACK = 'Black'
-RACE_INDIAN = 'Indian'
-RACE_ASIAN = 'Asian'
-RACE_HAWAIIAN = 'Hawaiian'
-RACE_WHITE = 'White'
-RACE_DECLINED = 'Declined'
+RACE_BLACK = 'black'
+RACE_INDIAN = 'indian'
+RACE_ASIAN = 'asian'
+RACE_HAWAIIAN = 'hawaiian'
+RACE_WHITE = 'white'
+RACE_DECLINED = 'declined'
 
 # Alternatively, django-localflavor includes localflavor.us.us_states.US_STATES
 US_STATES = (
