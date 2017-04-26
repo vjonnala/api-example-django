@@ -91,13 +91,22 @@ function update_appointment_status(appointment_id, status){
     });
 }
 
+function reload(){
+    $('#refresh-button').prop('disabled','disabled');
+    $('#refresh-button i').show();
+    load_appointments().done(function(){
+        $('#refresh-button').prop('disabled',false);
+        $('#refresh-button i').hide();
+    });
+}
+
 function load_appointments(){
-    $.ajax({
+    return $.ajax({
         url: '{% url 'ajax_get_appointments' %}'
     }).done(function(data){
         var results = data['results'];
         var appointment_html = "";
-        appointment_html += "<a class='pull-right btn btn-default' onclick='load_appointments();'>Refresh</a>";
+        appointment_html += "<button id='refresh-button' class='pull-right btn btn-default' onclick='reload();'><i class='fa fa-cog fa-spin fa-fw'></i> Refresh</button>";
         appointment_html += "<h3>Appointments:</h3><hr>";
         if(results.length > 0){
             for(var i=0; i<results.length; i++){
@@ -115,7 +124,8 @@ function load_appointments(){
 $(document).ready(function(){
     assignment_template =  Handlebars.compile($("#appointment-template").html());
     $('#appointment-row').masonry();
-    load_appointments();
+    reload();
+
 });
 
 
