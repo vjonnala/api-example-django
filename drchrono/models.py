@@ -63,3 +63,10 @@ class CheckOutSurveyResponse(models.Model):
         choices=answer_choices,
         max_length=20,
     )
+
+class Sign(models.Model):
+    image = models.ImageField()
+    ordering = models.IntegerField(help_text='Enter a number to place this sign in order, displayed low to high')
+
+    class Meta:
+        ordering = ['ordering']

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load helper_tags %}
+{% block head_title %}Upload Digital Sign{% endblock %}
+{% block body %}
+
+<div class="container">
+  <div class="row">
+      <div class="col-xs-12">
+        <h3>Upload Digital Sign</h3>
+        <div class="alert alert-info">You may use the form below to upload a digital sign to the sign carousel. </div>
+      </div>
+      <div class="col-xs-12">
+      <form method="POST" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field|addclass:"form-control" }}
+                <div class="text-danger">{{ field.errors }}</div>
+
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-default">Submit Feedback <i
+                class="glyphicon glyphicon-arrow-right"></i></button>
+      </form>
+      </div>
+  </div>
+</div>
+
+{% endblock %}

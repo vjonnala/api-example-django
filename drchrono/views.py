@@ -12,7 +12,7 @@ from social_auth_drchrono.mixins import LoginRequiredMixin
 
 from .api import ApiError, DrChrono
 from .forms import CheckInSearchForm, DemographicForm
-from .models import AppointmentStatusHistory, CheckOutSurveyResponse
+from .models import AppointmentStatusHistory, CheckOutSurveyResponse, Sign
 from .utils import format_timedelta, get_user_access_token
 
 
@@ -61,6 +61,7 @@ class CheckInView(LoginRequiredMixin, TemplateView):
         context['search_form'] = search_query
         context['status_confirmed'] = DrChrono.Appointment.STATUS_CONFIRMED
         context['status_complete'] = DrChrono.Appointment.STATUS_COMPLETE
+        context['signs'] = Sign.objects.all()
         return context
 
 
@@ -253,5 +254,19 @@ class CheckOutSurveyResponseCreateView(CreateView):
         messages.success(self.request, "Thank you for providing your feedback")
         return HttpResponseRedirect(self.get_success_url())
 
+
 class CheckOutSurveyResponseListView(ListView):
     model = CheckOutSurveyResponse
+
+
+class SignCreateView(CreateView):
+    model = Sign
+    fields = ['image', 'ordering']
+
+    def get_success_url(self):
+        return reverse('sign_list')
+
+
+class SignListView(ListView):
+    model = Sign
+

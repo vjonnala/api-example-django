@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block head_title %}Dashboard {{ block.super }}{% endblock %}
+{% block body %}
+
+{% include "nav.html" %}
+
+{% block messages %}{{ block.super }}{% endblock %}
+<div class="container">
+  <div class="row" id="appointment-row">
+      <div class="col-xs-12 text-center">
+          <a href="{% url 'sign_create' %}" class="btn btn-primary pull-right">Add Sign</a>
+          <h3>Digital Signage</h3>
+          <hr>
+          {% for sign in object_list %}
+          <img src="{{ sign.image.url }}">
+          {% endfor %}
+      </div>
+  </div>
+</div>
+
+
+{% endblock %}
