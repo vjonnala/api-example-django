@@ -1,19 +1,49 @@
 {% extends "base.html" %}
 {% block head_title %}Welcome {{ block.super }}{% endblock %}
 {% block body %}
-<div class="container">
-    <div class="jumbotron">
-        <h1>Welcome</h1>
-        <p class="lead">
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+    <div class="container">
+        <h1>Welcome to DrChrono Kiosk</h1>
+        <p>DrChrono Kiosk is a self-check-in kiosk with integration to the DrChrono EHR.
             DrChrono Kiosk allows patients to self check-in and indicates to healthcare providers how long
-            patients have been waiting.
-        </p>
+            patients have been waiting.</p>
         <p>
-            <a class="btn btn-lg btn-success" href="{% url 'social:begin' 'drchrono' %}" role="button">Sign in with DrChrono <i
-                    class="glyphicon glyphicon-arrow-right"></i></a>
-            <a class="btn btn-default">Learn More</a>
+            <a class="btn btn-lg btn-primary" href="{% url 'social:begin' 'drchrono' %}" role="button">
+                Sign in with DrChrono <i class="glyphicon glyphicon-arrow-right"></i>
+            </a>
         </p>
     </div>
+</div>
+
+<div class="container">
+    <!-- Example row of columns -->
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Improved Patient Experience</h2>
+            <p>Kiosk supports patient self check-in and self verification of patient details, easing the check-in
+                process
+                and improving patients' experiences. </p>
+
+        </div>
+        <div class="col-md-4">
+            <h2>Doctor Dashboard</h2>
+            <p>Kiosk offers an easy to use dashboard which displays all of today's appointments and allows
+                physicians to quickly ascertain how many patients have been waiting and for how long. Appointments
+                can
+                be easily started and completed from the dashboard. </p>
+        </div>
+        <div class="col-md-4">
+            <h2>Office Metrics</h2>
+            <p>Kiosk Metrics offer an overview on various key metrics on office/physician efficiency and patient
+                quality, including average patient wait time, average patient tardiness, appointment efficiency, and
+                schedule pace integrity. </p>
+
+        </div>
+    </div>
+
+    <hr>
 
     <footer class="footer">
         <p>Made with <a href="https://djangoproject.com">Django</a> and the <a href="https://www.drchrono.com/api/">
