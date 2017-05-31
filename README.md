@@ -12,9 +12,10 @@ $ python manage.py runserver
 
 `social_auth_drchrono/` contains a custom provider for [Python Social Auth](http://psa.matiasaguirre.net/) that handles OAUTH for drchrono. To configure it, set these fields in your `drchrono/settings.py` file:
 
-```
-SOCIAL_AUTH_DRCHRONO_KEY
-SOCIAL_AUTH_DRCHRONO_SECRET
-SOCIAL_AUTH_DRCHRONO_SCOPE
-LOGIN_REDIRECT_URL
-```
+### Design
+1) The page loads with the default welcome page with a Sign-In button
+2) After the doctor enters the site with his credentials, a web page is displayed which contatins the list of all patients whose birthday is the current day!
+3) Each list contatins a default-generated birthday greeting message , which can be later customized by the doctor.
+4) The page disables the row if the email for the patient is not found!
+5) The page has an option to select multiple rows which contains the list of patients, they need to send!
+6) After selecting the list of patients, email is send to their account, with their repective greeting and status of the is displayed back.
