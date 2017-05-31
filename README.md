@@ -19,3 +19,8 @@ $ python manage.py runserver
 4) The page disables the row if the email for the patient is not found!
 5) The page has an option to select multiple rows which contains the list of patients, they need to send!
 6) After selecting the list of patients, email is send to their account, with their repective greeting and status of the is displayed back.
+
+**Future extensions:**
+ -  e-cards or images in greeting
+ - Timezone support
+ - National Holidays and Regional Festivals
