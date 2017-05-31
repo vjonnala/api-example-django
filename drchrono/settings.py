@@ -13,8 +13,26 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
+EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+"""
+https://vjonnala.drchrono.com/o/authorize/?state=2cKjgsseU5jOUXuQKl4NHqeXGENDi7pX&redirect_uri=http%3A//127.0.0.1%3A8000/complete/drchrono/&response_type=code&client_id=2iegrkqUz6AX0Q6qYkUbbfwG3hvuZyKM3Qz6SmdU#/&response_type=code&client_id=2iegrkqUz6AX0Q6qYkUbbfwG3hvuZyKM3Qz6SmdU
+"""
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+print(PROJECT_ROOT)
+
+STATICFILES_DIRS = (
+	os.path.join(PROJECT_ROOT, '/static/'),
+)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -39,6 +57,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'drchrono',
     'social.apps.django_app.default',
+    'crispy_forms',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -109,3 +128,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
+SOCIAL_AUTH_DRCHRONO_KEY = "2iegrkqUz6AX0Q6qYkUbbfwG3hvuZyKM3Qz6SmdU"
+SOCIAL_AUTH_DRCHRONO_SECRET = "t0yOya0vg0vFqs3poNDFRnP2kdC6hA6o02bzEyDBYzXIMVINMQIjwGrdyy9jnXYGj13yi8Pn85oj46b525FZbnj19B2ejhCQMIlJLuY1CEYdJ8HsIHbHowfKhDDMC1WV"
+
+
+# LOGIN_REDIRECT_URL = '/dummy'

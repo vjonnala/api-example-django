@@ -1,8 +1,49 @@
+
+{% load staticfiles %}
+
+{% load app_filters %}
+
+{% load static %}
+
+
 <!DOCTYPE html>
 <html>
+<head>
+<link href="{% static 'styling.css' %}" rel="stylesheet" type="text/css" />
+<!--SCRIPTS-->
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<title>Welcome</title>
+<link type="image/png" href="https://app.drchrono.com/site_media/images/favicon.png" rel="icon"></link>
+
+
+</head>
   <body>
-    <a href="{% url 'social:begin' 'drchrono' %}">
-      drchrono OAuth
-    </a>
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <img src="/static/logo-dark.svg" vspace="5">
+	<!-- <a class="navbar-brand" href="#">DrChrono Kiosk</a> -->
+    </div>
+  </div>
+</nav>
+
+<div class="jumbotron" style="margin-left: 82px;margin-right: 100px;">
+    <div class="container" style="padding-right: 60px;padding-left: 65px;">
+        <h1 style="font-size: 50px;">Welcome to DrChrono Birthday Wisher API</h1>
+        <p>DrChrono Birthday Wisher is a Birthday reminder system that helps doctors send greetings to their patients on their birthday .</p>
+        <p>
+            <a class="btn btn-lg btn-primary" href="{% url 'social:begin' 'drchrono' %}" role="button">
+                Sign in with DrChrono <i class="glyphicon glyphicon-arrow-right"></i>
+            </a>
+        </p>
+    </div>
+</div>
   </body>
 </html>
+
